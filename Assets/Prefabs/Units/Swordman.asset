@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d4271372eb57374b9c3f5b283373519, type: 3}
+  m_Name: Swordman
+  m_EditorClassIdentifier: 
+  unitID: 0
+  unitName: Daniel
+  maxHealth: 100
+  attackDamage: 56
+  armor: 23
+  attackSpeed: 0.73
+  attackRange: 1
+  moveSpeed: 10
+  isRanged: 0
+  inventoryItems:
+  - {fileID: 11400000, guid: cf370f5a41c3a36429d9e42f572e312f, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  animatorController: {fileID: 9100000, guid: f5a5df21e2ce72749aab436d5667e57b, type: 2}
