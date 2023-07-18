@@ -4,7 +4,7 @@ using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class KeepBuildingOptions : MonoBehaviour
+public class KeepBuildingOptions : MonoBehaviour, IInteractable
 {
     public GameObject optionsPanel;
     public GameObject castlePostConstructionOptionsPanel;
@@ -45,18 +45,6 @@ public class KeepBuildingOptions : MonoBehaviour
         }
     }
 
-    private void OnMouseDown()
-    {
-        if (!isPanelOpen && !IsConstructed)
-        {
-            OpenOptionsPanel();
-        }
-        else
-        {
-            OpenPostConstructionOptionsPanel();
-        }
-    }
-
     private void OpenOptionsPanel()
     {
         optionsPanel.SetActive(true);
@@ -83,6 +71,38 @@ public class KeepBuildingOptions : MonoBehaviour
         optionsPanel.SetActive(false); // Fechar o painel de opções normal
         castlePostConstructionOptionsPanel.SetActive(true); // Abrir o painel de opções pós-construção do castelo
         isPanelOpen = true;
+    }
+    public void ClosePostConstructionOptionsPanel()
+    {
+        optionsPanel.SetActive(false); // Fechar o painel de opções normal
+        castlePostConstructionOptionsPanel.SetActive(false); // Abrir o painel de opções pós-construção do castelo
+        isPanelOpen = false;
+    }
+
+    public void Interact()
+    {
+        if (!IsConstructed && !isPanelOpen)
+        {
+            OpenOptionsPanel();
+        }
+        else if (!IsConstructed && isPanelOpen)
+        {
+            CloseOptionsPanel();
+        }
+        else if (IsConstructed && !isPanelOpen)
+        {
+            OpenPostConstructionOptionsPanel();
+        }
+        else
+        {
+            ClosePostConstructionOptionsPanel();
+        }
+    }
+
+    public void HideCanvas()
+    {
+        CloseOptionsPanel();
+        ClosePostConstructionOptionsPanel();
     }
 
 }

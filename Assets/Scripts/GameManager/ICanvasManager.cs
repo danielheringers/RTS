@@ -9,3 +9,9 @@ public interface ICanvasManager
     bool IsCanvasVisible { get; }
     GameObject GetCanvasGameObject();
 }
+
+public interface IInteractable
+{
+    void Interact();
+    void HideCanvas();
+}
