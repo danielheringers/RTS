@@ -5,11 +5,10 @@ public class UnitSelection : MonoBehaviour
 {
     public LayerMask unitLayer;
 
-    private List<UnitController> selectedUnits = new List<UnitController>();
+    public List<UnitController> selectedUnits = new List<UnitController>();
 
     private void Update()
     {
-
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -21,25 +20,36 @@ public class UnitSelection : MonoBehaviour
 
                 if (selectedUnit != null && !selectedUnits.Contains(selectedUnit))
                 {
-
-                    selectedUnits.Add(selectedUnit);
-                    
+                    AddToSelection(selectedUnit);
                 }
             }
             else
             {
-
                 ClearSelection();
             }
         }
     }
 
-
-    private void ClearSelection()
+    public void ClearSelection()
     {
+        foreach (UnitController unit in selectedUnits)
+        {
+            unit.SetSelected(false);
+        }
         selectedUnits.Clear();
     }
 
+    public void AddToSelection(UnitController unit)
+    {
+        unit.SetSelected(true);
+        selectedUnits.Add(unit);
+    }
+
+    public void RemoveFromSelection(UnitController unit)
+    {
+        unit.SetSelected(false);
+        selectedUnits.Remove(unit);
+    }
 
     public List<UnitController> GetSelectedUnits()
     {

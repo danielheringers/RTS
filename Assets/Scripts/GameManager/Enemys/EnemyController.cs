@@ -5,21 +5,12 @@ public class EnemyController : MonoBehaviour
 {
     public EnemyData enemyData;
     private int currentHealth;
-    private int currentDamage;
-    private int currentArmor;
-    private float currentAttackSpeed;
-    private float currentAttackRange;
-    private float currentMoveSpeed;
     public int experienceValue = 50;
 
     private void Start()
     {
         currentHealth = enemyData.maxHealth;
-        currentDamage = enemyData.attackDamage;
-        currentArmor = enemyData.armor;
-        currentAttackSpeed = enemyData.attackSpeed;
-        currentAttackRange = enemyData.attackRange;
-        currentMoveSpeed = enemyData.moveSpeed;
+
     }
 
     public void TakeDamage(int damageAmount)

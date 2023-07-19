@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class UnitMovement : MonoBehaviour
 {
     public NavMeshAgent navMeshAgent;
-    private Animator animator;
+    public Animator animator;
 
     private void Start()
     {

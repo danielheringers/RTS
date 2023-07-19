@@ -1,30 +1,98 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour
 {
-    public UnitSelection unitSelection;
+    public LayerMask unitLayer;
     public LayerMask groundLayer;
-    public Camera mainCamera; // Referência à câmera principal do jogo.
+    public Camera mainCamera;
+
+    private List<UnitController> selectedUnits = new List<UnitController>();
 
     private void Update()
     {
-        // Verifica se o jogador pressionou o botão direito do mouse.
+        
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, unitLayer))
+            {
+                UnitController selectedUnit = hit.collider.GetComponent<UnitController>();
+
+                if (selectedUnit != null)
+                {
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                    {
+                        
+                        AddToSelection(selectedUnit);
+                    }
+                    else
+                    {
+                        
+                        ClearSelection();
+                        AddToSelection(selectedUnit);
+                    }
+                }
+            }
+            else
+            {
+               
+                ClearSelection();
+            }
+        }
+
+        
         if (Input.GetMouseButtonDown(1))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            // Verifica se o clique atingiu o chão.
             if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
             {
                 Vector3 destination = hit.point;
 
-                // Move todas as unidades selecionadas para o destino.
-                foreach (UnitController unit in unitSelection.GetSelectedUnits())
+                
+                foreach (UnitController unit in selectedUnits)
                 {
-                    unit.GetComponent<UnitMovement>().MoveToDestination(destination);
+                    if (unit.isAttacking)
+                    {
+                        
+                        EnemyController enemy = hit.collider.GetComponent<EnemyController>();
+                        if (enemy != null && Vector3.Distance(unit.transform.position, enemy.transform.position) <= unit.currentAttackRange)
+                        {
+                            unit.AttackEnemy(enemy);
+                        }
+                        else
+                        {
+                            
+                            unit.GetComponent<UnitMovement>().MoveToDestination(destination);
+                        }
+                    }
+                    else
+                    {
+                        
+                        unit.GetComponent<UnitMovement>().MoveToDestination(destination);
+                    }
                 }
             }
         }
+    }
+
+    private void AddToSelection(UnitController unit)
+    {
+        unit.SetSelected(true);
+        selectedUnits.Add(unit);
+    }
+
+    private void ClearSelection()
+    {
+        foreach (UnitController unit in selectedUnits)
+        {
+            unit.SetSelected(false);
+        }
+        selectedUnits.Clear();
     }
 }

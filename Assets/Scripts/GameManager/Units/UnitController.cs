@@ -4,25 +4,24 @@ using UnityEngine.AI;
 public class UnitController : MonoBehaviour
 {
     public UnitData unitData;
-    private int currentHealth;
+    public int currentHealth;
     public int currentDamage;
     public int currentArmor;
     public float currentAttackSpeed;
     public float currentAttackRange;
     public float currentMoveSpeed;
     public bool isRanged;
-    private bool isSelected;
+    public bool isSelected;
 
-    private float attackCooldown;
-    private float lastAttackTime = 0.0f;
+    public float attackCooldown;
+    public float lastAttackTime = 0.0f;
     public NavMeshAgent navMeshAgent;
     public Camera mainCamera;
     public UnitSelection unitSelection;
     public LayerMask groundLayer;
-    private Animator animator;
-
-    private bool isAttacking;
-    private EnemyController targetEnemy;
+    public LayerMask enemyLayer;
+    public Animator animator;
+    public bool isAttacking;
     private void Start()
     {
         currentHealth = unitData.maxHealth;
@@ -40,38 +39,30 @@ public class UnitController : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(1))
-        {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
-            {
-                
-                if (unitSelection.GetSelectedUnits().Count > 0)
-                {
-
-                    UnitController selectedUnit = unitSelection.GetSelectedUnits()[0];
-
-                   
-                    EnemyController enemy = hit.collider.GetComponent<EnemyController>();
-                    if (enemy != null)
-                    {
-                       
-                        selectedUnit.GetComponent<UnitMovement>().MoveToDestination(hit.point);
-                        animator.SetBool("isAttacking", true);
-                        return; 
-                    }
-                }
-
-                
-                navMeshAgent.destination = hit.point;
-                animator.SetBool("isAttacking", false);
-            }
-        }
+        CheckForEnemyInRange();
     }
 
-    private void AttackEnemy(EnemyController enemy)
+    public bool CheckForEnemyInRange()
+    {
+
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, currentAttackRange, enemyLayer);
+
+        foreach (Collider col in hitColliders)
+        {
+            EnemyController enemyUnit = col.GetComponent<EnemyController>();
+
+            
+            if (enemyUnit != null)
+            {
+                return isAttacking = true;
+                Debug.Log("Atacando");
+            }
+        }
+
+        return isAttacking = false;
+    }
+
+    public void AttackEnemy(EnemyController enemy)
     {
         // Realiza o ataque e aplica dano ao inimigo.
         enemy.TakeDamage(unitData.attackDamage);
@@ -79,6 +70,8 @@ public class UnitController : MonoBehaviour
         // Atualiza o tempo do último ataque.
         lastAttackTime = Time.time;
     }
+
+
 
     public void TakeDamage(int damageAmount)
     {
