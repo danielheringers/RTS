@@ -83,28 +83,46 @@ public class UnitController : MonoBehaviour
         currentAttackRange = unitStats.attackRange;
         currentMoveSpeed = unitStats.moveSpeed;
     }
-
     public void CheckForEnemyInRange()
     {
-
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, currentAttackRange, enemyLayer);
+
+        bool hasValidTarget = false; // Variável para indicar se a unidade encontrou um alvo válido.
 
         foreach (Collider col in hitColliders)
         {
             EnemyController enemyUnit = col.GetComponent<EnemyController>();
 
+            if (enemyUnit && enemyUnit.IsAlive())
+            {
+                // Calcula a distância entre a unidade e o inimigo atual.
+                float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
 
-            if (enemyUnit)
-            {
-                isAttacking = true;
-                AttackEnemy(enemyUnit);
-            }
-            if (!enemyUnit)
-            {
-                isAttacking = false;
+                // Verifica se o inimigo atual está dentro da distância de ataque.
+                if (distanceToEnemy <= currentAttackRange)
+                {
+                    // Define o estado de ataque como true.
+                    isAttacking = true;
+
+                    // Ataca o inimigo somente quando a unidade estiver próxima o suficiente.
+                    if (distanceToEnemy <= stoppingDistance)
+                    {
+                        AttackEnemy(enemyUnit);
+                    }
+
+                    hasValidTarget = true; // Indica que a unidade encontrou um alvo válido para atacar.
+                    break; // Sai do loop, pois já encontramos um alvo válido.
+                }
             }
         }
+
+        // Se a unidade não encontrou nenhum alvo válido dentro da distância de ataque, desativa o estado de ataque.
+        if (!hasValidTarget)
+        {
+            isAttacking = false;
+        }
     }
+
 
     public void AttackEnemy(EnemyController enemy)
     {
@@ -208,7 +226,10 @@ public class UnitController : MonoBehaviour
             if (!isAttacking || target == null || !target.IsAlive())
             {
                 target = nearestEnemy;
-                navMeshAgent.destination = target.transform.position - (transform.position - target.transform.position).normalized * stoppingDistance;
+                Vector3 directionToEnemy = (target.transform.position - transform.position).normalized;
+                Vector3 destination = target.transform.position - directionToEnemy * stoppingDistance;
+                navMeshAgent.SetDestination(destination);
+
             }
         }
     }

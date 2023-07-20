@@ -4,7 +4,7 @@ using Unity.VisualScripting;
 public class UnitStats
 {
     public int maxHealth = 100;
-    public int attackDamage = 100;
+    public int attackDamage = 50;
     public int armor = 23;
     public float attackSpeed = 0.65f;
     public float attackRange = 1.5f;
@@ -29,7 +29,7 @@ public class UnitStats
     {
         currentLevel++;
         maxHealth += 84;
-        attackDamage += 100;
+        attackDamage += 3;
         armor += 3;
         attackSpeed += attackSpeed * 0.025f;
 

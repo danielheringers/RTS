@@ -20,7 +20,7 @@ public class EnemyController : MonoBehaviour
     {
         if (!isAlive)
             return;
-        currentHealth -= damageAmount;
+        currentHealth -= damageAmount - enemyData.armor / (enemyData.armor + 100);
         if (currentHealth <= 0)
         {
             Die();
