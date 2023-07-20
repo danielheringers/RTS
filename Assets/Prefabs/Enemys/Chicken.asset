@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyID: 0
   enemyName: Chicken
-  maxHealth: 20
+  maxHealth: 500
   attackDamage: 5
   armor: 2
   attackSpeed: 1

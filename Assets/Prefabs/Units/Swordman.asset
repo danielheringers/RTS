@@ -17,7 +17,7 @@ MonoBehaviour:
   maxHealth: 100
   attackDamage: 56
   armor: 23
-  attackSpeed: 0.73
+  attackSpeed: 5.5
   attackRange: 1
   moveSpeed: 10
   isRanged: 0
@@ -29,3 +29,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   animatorController: {fileID: 9100000, guid: f5a5df21e2ce72749aab436d5667e57b, type: 2}
+  currentLevel: 1
+  currentExperience: 0
+  experienceToNextLevel: 100

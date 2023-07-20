@@ -6,6 +6,8 @@ public class PlayerController : MonoBehaviour
 {
     public LayerMask unitLayer;
     public LayerMask groundLayer;
+    public LayerMask enemyLayer;
+    private UnitController unitController;
     public Camera mainCamera;
 
     private List<UnitController> selectedUnits = new List<UnitController>();
@@ -44,41 +46,55 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        
+
         if (Input.GetMouseButtonDown(1))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, enemyLayer))
             {
                 Vector3 destination = hit.point;
 
-                
                 foreach (UnitController unit in selectedUnits)
                 {
                     if (unit.isAttacking)
                     {
                         
                         EnemyController enemy = hit.collider.GetComponent<EnemyController>();
+                        Debug.Log(enemy);
                         if (enemy != null && Vector3.Distance(unit.transform.position, enemy.transform.position) <= unit.currentAttackRange)
                         {
                             unit.AttackEnemy(enemy);
                         }
                         else
                         {
-                            
                             unit.GetComponent<UnitMovement>().MoveToDestination(destination);
+                            unit.isAttacking = false;
                         }
                     }
-                    else
-                    {
-                        
+                }
+            }
+            else if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
+            {
+                Vector3 destination = hit.point;
+                foreach (UnitController unit in selectedUnits)
+                {
+                    if (unit)
+                    { 
+                        unit.isAttacking = false;
                         unit.GetComponent<UnitMovement>().MoveToDestination(destination);
                     }
                 }
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            // Ativar ou desativar o modo de combate automático para todas as unidades selecionadas.
+            ToggleAutoBattleForSelectedUnits();
+        }
+
     }
 
     private void AddToSelection(UnitController unit)
@@ -94,5 +110,14 @@ public class PlayerController : MonoBehaviour
             unit.SetSelected(false);
         }
         selectedUnits.Clear();
+    }
+
+    private void ToggleAutoBattleForSelectedUnits()
+    {
+        // Percorrer todas as unidades selecionadas e ativar/desativar o modo de combate automático.
+        foreach (UnitController unit in selectedUnits)
+        {
+            unit.ActivateAutoBattle(!unit.isAutoBattle);
+        }
     }
 }

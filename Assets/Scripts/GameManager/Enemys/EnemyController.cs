@@ -10,11 +10,12 @@ public class EnemyController : MonoBehaviour
     private void Start()
     {
         currentHealth = enemyData.maxHealth;
-
+        Debug.Log(currentHealth);
     }
 
     public void TakeDamage(int damageAmount)
     {
+        Debug.Log(damageAmount);
         currentHealth -= damageAmount;
         if (currentHealth <= 0)
         {
