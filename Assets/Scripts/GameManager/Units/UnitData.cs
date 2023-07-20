@@ -15,13 +15,13 @@ public class UnitData : ScriptableObject
 
 
     public ItemData[] inventoryItems = new ItemData[6]; 
-    public RuntimeAnimatorController animatorController; 
+    public RuntimeAnimatorController animatorController;
 
-
+    
     public int currentLevel = 1; 
     public int currentExperience = 0;
-    public int experienceToNextLevel = 100; 
-
+    public int experienceToNextLevel = 100;
+    
     public void GainExperience(int amount)
     {
         currentExperience += amount;
@@ -43,7 +43,6 @@ public class UnitData : ScriptableObject
         attackSpeed += attackSpeed * 0.025f;
 
         currentExperience -= experienceToNextLevel;
-
 
         experienceToNextLevel += 100;
 

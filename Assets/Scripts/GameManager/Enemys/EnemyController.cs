@@ -6,7 +6,7 @@ public class EnemyController : MonoBehaviour
     public EnemyData enemyData;
     private int currentHealth;
     public int experienceValue = 50;
-
+    private bool isAlive = true;
     private void Start()
     {
         currentHealth = enemyData.maxHealth;
@@ -15,7 +15,8 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDamage(int damageAmount)
     {
-        Debug.Log(damageAmount);
+        if (!isAlive)
+            return;
         currentHealth -= damageAmount;
         if (currentHealth <= 0)
         {
@@ -33,8 +34,12 @@ public class EnemyController : MonoBehaviour
 
     private void Die()
     {
-        // Adicione aqui a lógica para quando o inimigo morrer.
+        isAlive = false;
         Destroy(gameObject);
+    }
+    public bool IsAlive()
+    {
+        return isAlive;
     }
 
     // Aqui você pode adicionar outros comportamentos para o inimigo, como movimentação, ataque, etc.

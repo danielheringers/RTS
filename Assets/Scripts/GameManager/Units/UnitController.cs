@@ -26,6 +26,9 @@ public class UnitController : MonoBehaviour
     public LayerMask enemyLayer;
     public Animator animator;
     public bool isAttacking = false;
+    public float stoppingDistance = 1f;
+
+    private EnemyController target;
     private void Start()
     {
         currentHealth = unitData.maxHealth;
@@ -89,6 +92,15 @@ public class UnitController : MonoBehaviour
         {
             // Realiza o ataque e aplica dano ao inimigo
             enemy.TakeDamage(unitData.attackDamage);
+
+            // Verifica se o inimigo foi derrotado
+            if (!enemy.IsAlive())
+            {
+                // Define o estado de ataque como false e limpa o alvo atual.
+                isAttacking = false;
+                target = null;
+            }
+
             // Atualiza o tempo do último ataque.
             lastAttackTime = Time.time;
         }
@@ -134,33 +146,50 @@ public class UnitController : MonoBehaviour
     }
     private void PerformAutoBattle()
     {
-        // ...
-
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, 10f, enemyLayer);
+
+        EnemyController nearestEnemy = null;
+        float nearestDistance = Mathf.Infinity;
 
         foreach (Collider col in hitColliders)
         {
             EnemyController enemyUnit = col.GetComponent<EnemyController>();
 
-            if (enemyUnit != null)
+            if (enemyUnit != null && enemyUnit.IsAlive())
             {
-                // Adicione mensagens de debug para verificar a posição dos inimigos e o destino de movimento da unidade.
-                Debug.Log("Enemy Detected: " + enemyUnit.name + " at " + enemyUnit.transform.position);
-
-                // Realiza o ataque se estiver dentro da distância de ataque.
-                if (Vector3.Distance(transform.position, enemyUnit.transform.position) <= currentAttackRange)
+                // Verifica se a unidade já está atacando um inimigo.
+                if (isAttacking)
                 {
-                    AttackEnemy(enemyUnit);
+                    // Se a unidade já está atacando, continua a atacar o inimigo atual.
+                    if (target == enemyUnit)
+                    {
+                        AttackEnemy(enemyUnit);
+                    }
                 }
                 else
                 {
-                    // Define o destino para a movimentação da unidade.
-                    navMeshAgent.destination = enemyUnit.transform.position;
+                    // Calcula a distância entre a unidade e o inimigo atual.
+                    float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
+                    // Verifica se o inimigo atual está mais próximo do que o anteriormente selecionado.
+                    if (distanceToEnemy < nearestDistance)
+                    {
+                        nearestDistance = distanceToEnemy;
+                        nearestEnemy = enemyUnit;
+                    }
                 }
             }
         }
 
-        // ...
+        // Se foi encontrado um inimigo próximo, define o destino para a movimentação da unidade.
+        if (nearestEnemy != null)
+        {
+            // Verifica se a unidade já está atacando um inimigo.
+            if (!isAttacking || target == null || !target.IsAlive())
+            {
+                target = nearestEnemy;
+                navMeshAgent.destination = target.transform.position - (transform.position - target.transform.position).normalized * stoppingDistance;
+            }
+        }
     }
 
 }

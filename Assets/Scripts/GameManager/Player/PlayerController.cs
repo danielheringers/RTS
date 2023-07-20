@@ -62,14 +62,22 @@ public class PlayerController : MonoBehaviour
                     {
                         
                         EnemyController enemy = hit.collider.GetComponent<EnemyController>();
-                        Debug.Log(enemy);
                         if (enemy != null && Vector3.Distance(unit.transform.position, enemy.transform.position) <= unit.currentAttackRange)
                         {
                             unit.AttackEnemy(enemy);
                         }
                         else
                         {
-                            unit.GetComponent<UnitMovement>().MoveToDestination(destination);
+                            // Calcula a direção do inimigo para a unidade
+                            Vector3 directionToEnemy = (enemy.transform.position - unit.transform.position).normalized;
+
+                            // Calcula a posição de destino para que a unidade fique a uma distância de attackDistance do inimigo
+                            Vector3 stopPosition = enemy.transform.position - directionToEnemy * unit.currentAttackRange;
+
+                            // Mantém a altura da unidade na posição de destino
+                            stopPosition.y = unit.transform.position.y;
+
+                            unit.GetComponent<UnitMovement>().MoveToDestination(stopPosition);
                             unit.isAttacking = false;
                         }
                     }
