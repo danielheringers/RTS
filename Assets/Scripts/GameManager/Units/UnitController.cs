@@ -1,10 +1,10 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class UnitController : MonoBehaviour
-{
-    public UnitData unitData;
+{ 
     private UnitMovement unitMovement;
     public int currentHealth;
     public int currentDamage;
@@ -15,7 +15,7 @@ public class UnitController : MonoBehaviour
     public bool isRanged;
     public bool isSelected;
     public bool isAutoBattle = false;
-
+    public UnitStats unitStats = new UnitStats();
     public float attackCooldown;
     public float animatorCooldown;
     public float lastAttackTime = 0.0f;
@@ -29,20 +29,35 @@ public class UnitController : MonoBehaviour
     public float stoppingDistance = 1f;
 
     private EnemyController target;
+    private int experienceToReceive;
     private void Start()
     {
-        currentHealth = unitData.maxHealth;
-        currentDamage = unitData.attackDamage;
-        currentArmor = unitData.armor;
-        currentAttackSpeed = unitData.attackSpeed;
-        currentAttackRange = unitData.attackRange;
-        currentMoveSpeed = unitData.moveSpeed;
+        InitializeStats();
+        currentHealth = unitStats.maxHealth;
+        currentDamage = unitStats.attackDamage;
+        currentArmor = unitStats.armor;
+        currentAttackSpeed = unitStats.attackSpeed;
+        currentAttackRange = unitStats.attackRange;
+        currentMoveSpeed = unitStats.moveSpeed;
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         enemyLayer = LayerMask.GetMask("Enemy");
-        attackCooldown = 1f / unitData.attackSpeed;
-        animatorCooldown = 1f * unitData.attackSpeed;
+        attackCooldown = 1f / unitStats.attackSpeed;
+        animatorCooldown = 1f * unitStats.attackSpeed;
+
+        // Busca por todos os inimigos presentes na cena e adiciona o ouvinte ao evento OnDeath.
+        EnemyController[] enemies = FindObjectsOfType<EnemyController>();
+        foreach (EnemyController enemy in enemies)
+        {
+            enemy.OnDeath.AddListener(ReceiveExperience);
+        }
     }
+
+    private void ReceiveExperience(int experienceReceived)
+    {
+        unitStats.GainExperience(experienceReceived);
+    }
+
 
     private void Update()
     {
@@ -61,6 +76,12 @@ public class UnitController : MonoBehaviour
             // Se estiver no modo de combate automático, procurar inimigos e atacar automaticamente.
             PerformAutoBattle();
         }
+        currentHealth = unitStats.maxHealth;
+        currentDamage = unitStats.attackDamage;
+        currentArmor = unitStats.armor;
+        currentAttackSpeed = unitStats.attackSpeed;
+        currentAttackRange = unitStats.attackRange;
+        currentMoveSpeed = unitStats.moveSpeed;
     }
 
     public void CheckForEnemyInRange()
@@ -91,7 +112,7 @@ public class UnitController : MonoBehaviour
         if (Time.time - lastAttackTime >= attackCooldown)
         {
             // Realiza o ataque e aplica dano ao inimigo
-            enemy.TakeDamage(unitData.attackDamage);
+            enemy.TakeDamage(unitStats.attackDamage);
 
             // Verifica se o inimigo foi derrotado
             if (!enemy.IsAlive())
@@ -192,4 +213,8 @@ public class UnitController : MonoBehaviour
         }
     }
 
+    private void InitializeStats()
+    {
+        unitStats = new UnitStats();
+    }
 }

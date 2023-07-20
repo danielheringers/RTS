@@ -12,4 +12,5 @@ public class EnemyData : ScriptableObject
     public float attackRange;
     public float moveSpeed;
     public bool isRanged;
+    public int experience;
 }

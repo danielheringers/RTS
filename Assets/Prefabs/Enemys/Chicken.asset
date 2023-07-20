@@ -21,3 +21,4 @@ MonoBehaviour:
   attackRange: 1
   moveSpeed: 3.5
   isRanged: 0
+  experience: 100
