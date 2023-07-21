@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a64e647fcfe26d247902affa0263e51c, type: 3}
+  m_Name: Arthur
+  m_EditorClassIdentifier: 
+  characterName: Arthur
+  maxHealth: 618
+  attackDamage: 70
+  armor: 41
+  attackSpeed: 0.78796875
+  attackRange: 2
+  moveSpeed: 10
+  isRanged: 0
+  currentLevel: 3
+  currentExperience: 0
+  experienceToNextLevel: 300

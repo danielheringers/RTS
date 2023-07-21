@@ -15,7 +15,7 @@ public class UnitController : MonoBehaviour
     public bool isRanged;
     public bool isSelected;
     public bool isAutoBattle = false;
-    public UnitStats unitStats = new UnitStats();
+    public CharacterData characterData;
     public float attackCooldown;
     public float animatorCooldown;
     public float lastAttackTime = 0.0f;
@@ -27,23 +27,24 @@ public class UnitController : MonoBehaviour
     public Animator animator;
     public bool isAttacking = false;
     public float stoppingDistance = 1f;
+    public GameObject projectilePrefab;
+    public Transform projectileSpawnPoint;
 
     private EnemyController target;
     private int experienceToReceive;
     private void Start()
     {
-        InitializeStats();
-        currentHealth = unitStats.maxHealth;
-        currentDamage = unitStats.attackDamage;
-        currentArmor = unitStats.armor;
-        currentAttackSpeed = unitStats.attackSpeed;
-        currentAttackRange = unitStats.attackRange;
-        currentMoveSpeed = unitStats.moveSpeed;
+        currentHealth = characterData.maxHealth;
+        currentDamage = characterData.attackDamage;
+        currentArmor = characterData.armor;
+        currentAttackSpeed = characterData.attackSpeed;
+        currentAttackRange = characterData.attackRange;
+        currentMoveSpeed = characterData.moveSpeed;
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         enemyLayer = LayerMask.GetMask("Enemy");
-        attackCooldown = 1f / unitStats.attackSpeed;
-        animatorCooldown = 1f * unitStats.attackSpeed;
+        attackCooldown = 1f / characterData.attackSpeed;
+        animatorCooldown = 1f * characterData.attackSpeed;
 
         // Busca por todos os inimigos presentes na cena e adiciona o ouvinte ao evento OnDeath.
         EnemyController[] enemies = FindObjectsOfType<EnemyController>();
@@ -55,13 +56,20 @@ public class UnitController : MonoBehaviour
 
     private void ReceiveExperience(int experienceReceived)
     {
-        unitStats.GainExperience(experienceReceived);
+        characterData.GainExperience(experienceReceived);
     }
 
 
     private void Update()
     {
-        CheckForEnemyInRange();
+        if (!isRanged)
+        {
+            CheckForEnemyInRange();
+        }
+        else
+        {
+            CheckForEnemyInRangeisRange();
+        }
         if (isAttacking == true)
         {
             animator.SetBool("isAttacking", true);
@@ -76,12 +84,12 @@ public class UnitController : MonoBehaviour
             // Se estiver no modo de combate automático, procurar inimigos e atacar automaticamente.
             PerformAutoBattle();
         }
-        currentHealth = unitStats.maxHealth;
-        currentDamage = unitStats.attackDamage;
-        currentArmor = unitStats.armor;
-        currentAttackSpeed = unitStats.attackSpeed;
-        currentAttackRange = unitStats.attackRange;
-        currentMoveSpeed = unitStats.moveSpeed;
+        currentHealth = characterData.maxHealth;
+        currentDamage = characterData.attackDamage;
+        currentArmor = characterData.armor;
+        currentAttackSpeed = characterData.attackSpeed;
+        currentAttackRange = characterData.attackRange;
+        currentMoveSpeed = characterData.moveSpeed;
     }
     public void CheckForEnemyInRange()
     {
@@ -123,28 +131,127 @@ public class UnitController : MonoBehaviour
         }
     }
 
-
-    public void AttackEnemy(EnemyController enemy)
+    public void CheckForEnemyInRangeisRange()
     {
-        // Verifica se o tempo desde o último ataque é maior do que o tempo de intervalo entre ataques.
-        if (Time.time - lastAttackTime >= attackCooldown)
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, currentAttackRange, enemyLayer);
+
+        bool hasValidTarget = false; // Variável para indicar se a unidade encontrou um alvo válido.
+
+        foreach (Collider col in hitColliders)
         {
-            // Realiza o ataque e aplica dano ao inimigo
-            enemy.TakeDamage(unitStats.attackDamage);
+            EnemyController enemyUnit = col.GetComponent<EnemyController>();
 
-            // Verifica se o inimigo foi derrotado
-            if (!enemy.IsAlive())
+            if (enemyUnit && enemyUnit.IsAlive())
             {
-                // Define o estado de ataque como false e limpa o alvo atual.
-                isAttacking = false;
-                target = null;
-            }
+                // Calcula a distância entre a unidade e o inimigo atual.
+                float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
 
-            // Atualiza o tempo do último ataque.
-            lastAttackTime = Time.time;
+                // Verifica se o inimigo atual está dentro da distância de ataque.
+                if (distanceToEnemy <= currentAttackRange)
+                {
+                    // Define o estado de ataque como true.
+                    isAttacking = true;
+
+                    // Ataca o inimigo somente quando a unidade estiver próxima o suficiente.
+                    if (distanceToEnemy <= currentAttackRange)
+                    {
+                        AttackEnemy(enemyUnit);
+                    }
+
+                    hasValidTarget = true; // Indica que a unidade encontrou um alvo válido para atacar.
+                    break; // Sai do loop, pois já encontramos um alvo válido.
+                }
+            }
+        }
+
+        // Se a unidade não encontrou nenhum alvo válido dentro da distância de ataque, desativa o estado de ataque.
+        if (!hasValidTarget)
+        {
+            isAttacking = false;
         }
     }
 
+    public void AttackEnemy(EnemyController enemy)
+    {
+        if (isRanged)
+        {
+            // Verifica se o tempo desde o último ataque é maior do que o tempo de intervalo entre ataques.
+            if (Time.time - lastAttackTime >= attackCooldown)
+            {
+                // Realiza o ataque e aplica dano ao inimigo
+                if (isRanged)
+                {
+                    // Se o personagem for ranged, atira um projétil
+                    ShootProjectile(enemy);
+                    enemy.TakeDamage(characterData.attackDamage);
+                }
+
+                // Verifica se o inimigo foi derrotado
+                if (!enemy.IsAlive())
+                {
+                    // Define o estado de ataque como false e limpa o alvo atual.
+                    isAttacking = false;
+                    target = null;
+
+                    // Remova a referência do alvo no projétil.
+                    if (projectilePrefab != null)
+                    {
+                        ProjectileScript projectileScript = projectilePrefab.GetComponent<ProjectileScript>();
+                        if (projectileScript != null)
+                        {
+                            projectileScript.SetTarget(null);
+                        }
+                    }
+                }
+
+                // Atualiza o tempo do último ataque.
+                lastAttackTime = Time.time;
+            }
+        }
+        else
+        {
+            // Verifica se o tempo desde o último ataque é maior do que o tempo de intervalo entre ataques.
+            if (Time.time - lastAttackTime >= attackCooldown)
+            {
+                // Realiza o ataque e aplica dano ao inimigo
+                enemy.TakeDamage(characterData.attackDamage);
+
+                // Verifica se o inimigo foi derrotado
+                if (!enemy.IsAlive())
+                {
+                    // Define o estado de ataque como false e limpa o alvo atual.
+                    isAttacking = false;
+                    target = null;
+                }
+
+                // Atualiza o tempo do último ataque.
+                lastAttackTime = Time.time;
+            }
+        }
+    }
+    private void ShootProjectile(EnemyController target)
+    {
+        // Verifica se o prefab do projétil está configurado
+        if (projectilePrefab == null)
+        {
+            Debug.LogError("Projectile prefab not set on " + gameObject.name);
+            return;
+        }
+
+        // Instancia o projétil no ponto de instância do projétil
+        GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
+
+        // Obtém um componente do projétil (você precisa definir seu script para movimentar o projétil e causar dano)
+        ProjectileScript projectileScript = projectile.GetComponent<ProjectileScript>();
+
+        // Define o alvo para o projétil (isso permite que o projétil saiba quem ele deve perseguir)
+        projectileScript.SetTarget(target.transform);
+
+        // Define a fonte do projétil (a unidade que está atirando)
+        projectileScript.SetSource(transform);
+
+        // Adicione outras configurações específicas do projétil aqui, se necessário.
+    }
 
 
     public void TakeDamage(int damageAmount)
@@ -232,10 +339,5 @@ public class UnitController : MonoBehaviour
 
             }
         }
-    }
-
-    private void InitializeStats()
-    {
-        unitStats = new UnitStats();
     }
 }

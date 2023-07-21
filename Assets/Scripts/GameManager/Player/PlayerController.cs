@@ -58,6 +58,7 @@ public class PlayerController : MonoBehaviour
 
                 foreach (UnitController unit in selectedUnits)
                 {
+
                     if (unit.isAttacking)
                     {
                         

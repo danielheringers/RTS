@@ -43,23 +43,23 @@ public class UnitInfoUI : MonoBehaviour
 
     private void UpdateUI()
     {
-        if (selectedUnit.unitStats != null)
+        if (selectedUnit.characterData != null)
         {
             unitStatsUI.SetActive(true);
-            // Atualiza os valores de texto com as informações do unitStats
-            levelText.text = selectedUnit.unitStats.currentLevel.ToString();
-            experienceText.text = selectedUnit.unitStats.currentExperience.ToString();
-            attackDamageText.text = selectedUnit.unitStats.attackDamage.ToString();
-            attackSpeedText.text = selectedUnit.unitStats.attackSpeed.ToString("F2") + "/Sec";
-            armorText.text = selectedUnit.unitStats.armor.ToString();
-            moveSpeedText.text = selectedUnit.unitStats.moveSpeed.ToString();
+            // Atualiza os valores de texto com as informações do characterData
+            levelText.text = selectedUnit.characterData.currentLevel.ToString();
+            experienceText.text = selectedUnit.characterData.currentExperience.ToString();
+            attackDamageText.text = selectedUnit.characterData.attackDamage.ToString();
+            attackSpeedText.text = selectedUnit.characterData.attackSpeed.ToString("F2") + "/Sec";
+            armorText.text = selectedUnit.characterData.armor.ToString();
+            moveSpeedText.text = selectedUnit.characterData.moveSpeed.ToString();
             float currentHP = selectedUnit.currentHealth;
-            float maxHP = selectedUnit.unitStats.maxHealth;
+            float maxHP = selectedUnit.characterData.maxHealth;
             healthSlider.value = currentHP / maxHP;
 
             // Calcula a porcentagem de experiência atual em relação à experiência necessária para o próximo nível
-            float currentExp = selectedUnit.unitStats.currentExperience;
-            float expToNextLevel = selectedUnit.unitStats.experienceToNextLevel;
+            float currentExp = selectedUnit.characterData.currentExperience;
+            float expToNextLevel = selectedUnit.characterData.experienceToNextLevel;
             float percentage = (currentExp / expToNextLevel) * 100;
 
             // Mostra a porcentagem no texto correspondente
