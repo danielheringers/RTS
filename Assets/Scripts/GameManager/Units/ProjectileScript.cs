@@ -12,7 +12,7 @@ public class ProjectileScript : MonoBehaviour
     private Transform source;
     private Vector3 initialPosition;
     private bool isMoving = false;
-
+    private UnitController unitController;
     public void SetTarget(Transform target)
     {
         this.target = target;
@@ -26,6 +26,7 @@ public class ProjectileScript : MonoBehaviour
     private void Start()
     {
         initialPosition = transform.position;
+        unitController = source.GetComponent<UnitController>();
     }
 
     private void Update()
@@ -33,6 +34,10 @@ public class ProjectileScript : MonoBehaviour
         if (target != null && !isMoving)
         {
             StartCoroutine(MoveToTarget());
+        }
+        else if(target == null)
+        {
+            Destroy(gameObject);
         }
 
     }
@@ -69,10 +74,26 @@ public class ProjectileScript : MonoBehaviour
 
             yield return null;
         }
-
+        ApplyDamageToTarget();
 
         yield return new WaitForSeconds(destroyDelay);
 
         Destroy(gameObject);
+    }
+
+    private void ApplyDamageToTarget()
+    {
+        if (target != null)
+        {
+            // Verifica se o alvo possui o componente EnemyController (ou o componente do seu inimigo, se aplicável)
+            EnemyController enemy = target.GetComponent<EnemyController>();
+
+            if (enemy != null && unitController != null)
+            {
+                // Aplica o dano ao alvo usando o método TakeDamage do inimigo
+                enemy.TakeDamage(unitController.currentDamage);
+                
+            }
+        }
     }
 }

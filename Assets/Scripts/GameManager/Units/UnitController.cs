@@ -1,10 +1,10 @@
-using System;
+ï»¿using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class UnitController : MonoBehaviour
-{ 
+{
     private UnitMovement unitMovement;
     public int currentHealth;
     public int currentDamage;
@@ -26,10 +26,11 @@ public class UnitController : MonoBehaviour
     public LayerMask enemyLayer;
     public Animator animator;
     public bool isAttacking = false;
-    public float stoppingDistance = 1f;
+    public float stoppingDistance;
     public GameObject projectilePrefab;
     public Transform projectileSpawnPoint;
-
+    private bool hasLaunchedProjectile = false;
+    public int frameToLaunchProjectile = 10;
     private EnemyController target;
     private int experienceToReceive;
     private void Start()
@@ -52,6 +53,7 @@ public class UnitController : MonoBehaviour
         {
             enemy.OnDeath.AddListener(ReceiveExperience);
         }
+        stoppingDistance = currentAttackRange;
     }
 
     private void ReceiveExperience(int experienceReceived)
@@ -62,11 +64,11 @@ public class UnitController : MonoBehaviour
 
     private void Update()
     {
-        if (!isRanged)
+        if (!isRanged && isAutoBattle)
         {
             CheckForEnemyInRange();
         }
-        else
+        else if(isRanged && isAutoBattle)
         {
             CheckForEnemyInRangeisRange();
         }
@@ -81,7 +83,7 @@ public class UnitController : MonoBehaviour
         }
         if (isAutoBattle)
         {
-            // Se estiver no modo de combate automático, procurar inimigos e atacar automaticamente.
+            // Se estiver no modo de combate automï¿½tico, procurar inimigos e atacar automaticamente.
             PerformAutoBattle();
         }
         currentHealth = characterData.maxHealth;
@@ -90,12 +92,31 @@ public class UnitController : MonoBehaviour
         currentAttackSpeed = characterData.attackSpeed;
         currentAttackRange = characterData.attackRange;
         currentMoveSpeed = characterData.moveSpeed;
+
+        // Verifica se a animaÃ§Ã£o de ataque estÃ¡ sendo reproduzida
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("archer_04_attack_A"))
+        {
+            // Calcula o tempo atual da animaÃ§Ã£o em frames
+            float currentFrame = animator.GetCurrentAnimatorStateInfo(0).normalizedTime * animator.GetCurrentAnimatorClipInfo(0)[0].clip.frameRate;
+
+            // Verifica se o 10Âº frame da animaÃ§Ã£o foi alcanÃ§ado e se o projetil ainda nÃ£o foi lanÃ§ado
+            if (currentFrame >= frameToLaunchProjectile && !hasLaunchedProjectile)
+            {
+                hasLaunchedProjectile = true;
+
+            }
+        }
+        else
+        {
+            // Reseta o flag quando a animaÃ§Ã£o nÃ£o estiver sendo reproduzida
+            hasLaunchedProjectile = false;
+        }
     }
     public void CheckForEnemyInRange()
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, currentAttackRange, enemyLayer);
 
-        bool hasValidTarget = false; // Variável para indicar se a unidade encontrou um alvo válido.
+        bool hasValidTarget = false; // Variï¿½vel para indicar se a unidade encontrou um alvo vï¿½lido.
 
         foreach (Collider col in hitColliders)
         {
@@ -103,28 +124,28 @@ public class UnitController : MonoBehaviour
 
             if (enemyUnit && enemyUnit.IsAlive())
             {
-                // Calcula a distância entre a unidade e o inimigo atual.
+                // Calcula a distï¿½ncia entre a unidade e o inimigo atual.
                 float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
 
-                // Verifica se o inimigo atual está dentro da distância de ataque.
+                // Verifica se o inimigo atual estï¿½ dentro da distï¿½ncia de ataque.
                 if (distanceToEnemy <= currentAttackRange)
                 {
                     // Define o estado de ataque como true.
                     isAttacking = true;
 
-                    // Ataca o inimigo somente quando a unidade estiver próxima o suficiente.
+                    // Ataca o inimigo somente quando a unidade estiver prï¿½xima o suficiente.
                     if (distanceToEnemy <= stoppingDistance)
                     {
                         AttackEnemy(enemyUnit);
                     }
 
-                    hasValidTarget = true; // Indica que a unidade encontrou um alvo válido para atacar.
-                    break; // Sai do loop, pois já encontramos um alvo válido.
+                    hasValidTarget = true; // Indica que a unidade encontrou um alvo vï¿½lido para atacar.
+                    break; // Sai do loop, pois jï¿½ encontramos um alvo vï¿½lido.
                 }
             }
         }
 
-        // Se a unidade não encontrou nenhum alvo válido dentro da distância de ataque, desativa o estado de ataque.
+        // Se a unidade nï¿½o encontrou nenhum alvo vï¿½lido dentro da distï¿½ncia de ataque, desativa o estado de ataque.
         if (!hasValidTarget)
         {
             isAttacking = false;
@@ -135,7 +156,7 @@ public class UnitController : MonoBehaviour
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, currentAttackRange, enemyLayer);
 
-        bool hasValidTarget = false; // Variável para indicar se a unidade encontrou um alvo válido.
+        bool hasValidTarget = false; // Variï¿½vel para indicar se a unidade encontrou um alvo vï¿½lido.
 
         foreach (Collider col in hitColliders)
         {
@@ -143,28 +164,28 @@ public class UnitController : MonoBehaviour
 
             if (enemyUnit && enemyUnit.IsAlive())
             {
-                // Calcula a distância entre a unidade e o inimigo atual.
+                // Calcula a distï¿½ncia entre a unidade e o inimigo atual.
                 float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
 
-                // Verifica se o inimigo atual está dentro da distância de ataque.
+                // Verifica se o inimigo atual estï¿½ dentro da distï¿½ncia de ataque.
                 if (distanceToEnemy <= currentAttackRange)
                 {
                     // Define o estado de ataque como true.
                     isAttacking = true;
 
-                    // Ataca o inimigo somente quando a unidade estiver próxima o suficiente.
+                    // Ataca o inimigo somente quando a unidade estiver prï¿½xima o suficiente.
                     if (distanceToEnemy <= currentAttackRange)
                     {
                         AttackEnemy(enemyUnit);
                     }
 
-                    hasValidTarget = true; // Indica que a unidade encontrou um alvo válido para atacar.
-                    break; // Sai do loop, pois já encontramos um alvo válido.
+                    hasValidTarget = true; // Indica que a unidade encontrou um alvo vï¿½lido para atacar.
+                    break; // Sai do loop, pois jï¿½ encontramos um alvo vï¿½lido.
                 }
             }
         }
 
-        // Se a unidade não encontrou nenhum alvo válido dentro da distância de ataque, desativa o estado de ataque.
+        // Se a unidade nï¿½o encontrou nenhum alvo vï¿½lido dentro da distï¿½ncia de ataque, desativa o estado de ataque.
         if (!hasValidTarget)
         {
             isAttacking = false;
@@ -173,84 +194,68 @@ public class UnitController : MonoBehaviour
 
     public void AttackEnemy(EnemyController enemy)
     {
-        if (isRanged)
+
+        // Verifica se o tempo desde o ï¿½ltimo ataque ï¿½ maior do que o tempo de intervalo entre ataques.
+        if (Time.time - lastAttackTime >= attackCooldown)
         {
-            // Verifica se o tempo desde o último ataque é maior do que o tempo de intervalo entre ataques.
-            if (Time.time - lastAttackTime >= attackCooldown)
+            // Realiza o ataque e aplica dano ao inimigo
+            if (isRanged)
             {
-                // Realiza o ataque e aplica dano ao inimigo
-                if (isRanged)
-                {
-                    // Se o personagem for ranged, atira um projétil
-                    ShootProjectile(enemy);
-                    enemy.TakeDamage(characterData.attackDamage);
-                }
+                // Se o personagem for ranged, atira um projï¿½til
+                ShootProjectile(enemy);
+            }
+            else
+            {
+                enemy.TakeDamage(characterData.attackDamage);
+            }
 
-                // Verifica se o inimigo foi derrotado
-                if (!enemy.IsAlive())
-                {
-                    // Define o estado de ataque como false e limpa o alvo atual.
-                    isAttacking = false;
-                    target = null;
+            // Verifica se o inimigo foi derrotado
+            if (!enemy.IsAlive())
+            {
+                // Define o estado de ataque como false e limpa o alvo atual.
+                isAttacking = false;
+                target = null;
 
-                    // Remova a referência do alvo no projétil.
-                    if (projectilePrefab != null)
+                // Remova a referï¿½ncia do alvo no projï¿½til.
+                if (projectilePrefab != null)
+                {
+                    ProjectileScript projectileScript = projectilePrefab.GetComponent<ProjectileScript>();
+                    if (projectileScript != null)
                     {
-                        ProjectileScript projectileScript = projectilePrefab.GetComponent<ProjectileScript>();
-                        if (projectileScript != null)
-                        {
-                            projectileScript.SetTarget(null);
-                        }
+                        projectileScript.SetTarget(null);
                     }
                 }
-
-                // Atualiza o tempo do último ataque.
-                lastAttackTime = Time.time;
             }
-        }
-        else
-        {
-            // Verifica se o tempo desde o último ataque é maior do que o tempo de intervalo entre ataques.
-            if (Time.time - lastAttackTime >= attackCooldown)
-            {
-                // Realiza o ataque e aplica dano ao inimigo
-                enemy.TakeDamage(characterData.attackDamage);
 
-                // Verifica se o inimigo foi derrotado
-                if (!enemy.IsAlive())
-                {
-                    // Define o estado de ataque como false e limpa o alvo atual.
-                    isAttacking = false;
-                    target = null;
-                }
-
-                // Atualiza o tempo do último ataque.
-                lastAttackTime = Time.time;
-            }
+            // Atualiza o tempo do ï¿½ltimo ataque.
+            lastAttackTime = Time.time;
         }
     }
     private void ShootProjectile(EnemyController target)
     {
-        // Verifica se o prefab do projétil está configurado
+        // Verifica se o prefab do projï¿½til estï¿½ configurado
         if (projectilePrefab == null)
         {
             Debug.LogError("Projectile prefab not set on " + gameObject.name);
             return;
         }
 
-        // Instancia o projétil no ponto de instância do projétil
+        // Instancia o projï¿½til no ponto de instï¿½ncia do projï¿½til
         GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
 
-        // Obtém um componente do projétil (você precisa definir seu script para movimentar o projétil e causar dano)
+        // Obtï¿½m um componente do projï¿½til (vocï¿½ precisa definir seu script para movimentar o projï¿½til e causar dano)
         ProjectileScript projectileScript = projectile.GetComponent<ProjectileScript>();
 
-        // Define o alvo para o projétil (isso permite que o projétil saiba quem ele deve perseguir)
+        // Define o alvo para o projï¿½til (isso permite que o projï¿½til saiba quem ele deve perseguir)
         projectileScript.SetTarget(target.transform);
 
-        // Define a fonte do projétil (a unidade que está atirando)
+        // Define a fonte do projï¿½til (a unidade que estï¿½ atirando)
         projectileScript.SetSource(transform);
 
-        // Adicione outras configurações específicas do projétil aqui, se necessário.
+        if (projectileScript.target == null)
+        {
+            Destroy(projectile);
+        }
     }
 
 
@@ -265,7 +270,7 @@ public class UnitController : MonoBehaviour
 
     private void Die()
     {
-        // Adicione aqui a lógica para quando a unidade morrer.
+        // Adicione aqui a lï¿½gica para quando a unidade morrer.
         Destroy(gameObject);
     }
 
@@ -274,7 +279,7 @@ public class UnitController : MonoBehaviour
         return isSelected;
     }
 
-    // Define se a unidade está selecionada.
+    // Define se a unidade estï¿½ selecionada.
     public void SetSelected(bool selected)
     {
         isSelected = selected;
@@ -303,10 +308,10 @@ public class UnitController : MonoBehaviour
 
             if (enemyUnit != null && enemyUnit.IsAlive())
             {
-                // Verifica se a unidade já está atacando um inimigo.
+                // Verifica se a unidade jï¿½ estï¿½ atacando um inimigo.
                 if (isAttacking)
                 {
-                    // Se a unidade já está atacando, continua a atacar o inimigo atual.
+                    // Se a unidade jï¿½ estï¿½ atacando, continua a atacar o inimigo atual.
                     if (target == enemyUnit)
                     {
                         AttackEnemy(enemyUnit);
@@ -314,9 +319,9 @@ public class UnitController : MonoBehaviour
                 }
                 else
                 {
-                    // Calcula a distância entre a unidade e o inimigo atual.
+                    // Calcula a distï¿½ncia entre a unidade e o inimigo atual.
                     float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
-                    // Verifica se o inimigo atual está mais próximo do que o anteriormente selecionado.
+                    // Verifica se o inimigo atual estï¿½ mais prï¿½ximo do que o anteriormente selecionado.
                     if (distanceToEnemy < nearestDistance)
                     {
                         nearestDistance = distanceToEnemy;
@@ -326,10 +331,10 @@ public class UnitController : MonoBehaviour
             }
         }
 
-        // Se foi encontrado um inimigo próximo, define o destino para a movimentação da unidade.
+        // Se foi encontrado um inimigo prï¿½ximo, define o destino para a movimentaï¿½ï¿½o da unidade.
         if (nearestEnemy != null)
         {
-            // Verifica se a unidade já está atacando um inimigo.
+            // Verifica se a unidade jï¿½ estï¿½ atacando um inimigo.
             if (!isAttacking || target == null || !target.IsAlive())
             {
                 target = nearestEnemy;

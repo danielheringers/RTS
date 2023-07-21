@@ -65,7 +65,7 @@ public class PlayerController : MonoBehaviour
                         EnemyController enemy = hit.collider.GetComponent<EnemyController>();
                         if (enemy != null && Vector3.Distance(unit.transform.position, enemy.transform.position) <= unit.currentAttackRange)
                         {
-                            unit.AttackEnemy(enemy);
+                            unit.isAutoBattle = true;
                         }
                         else
                         {
@@ -90,7 +90,8 @@ public class PlayerController : MonoBehaviour
                 foreach (UnitController unit in selectedUnits)
                 {
                     if (unit)
-                    { 
+                    {
+                        unit.isAutoBattle = false;
                         unit.isAttacking = false;
                         unit.GetComponent<UnitMovement>().MoveToDestination(destination);
                     }

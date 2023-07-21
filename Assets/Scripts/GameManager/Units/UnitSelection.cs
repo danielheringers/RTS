@@ -5,6 +5,7 @@ public class UnitSelection : MonoBehaviour
 {
     public LayerMask unitLayer;
 
+    public List<UnitController> unitList = new List<UnitController>();
     public List<UnitController> selectedUnits = new List<UnitController>();
 
     private void Update()
@@ -21,6 +22,7 @@ public class UnitSelection : MonoBehaviour
                 if (selectedUnit != null && !selectedUnits.Contains(selectedUnit))
                 {
                     AddToSelection(selectedUnit);
+                    
                 }
             }
             else
