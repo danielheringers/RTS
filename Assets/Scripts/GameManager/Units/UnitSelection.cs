@@ -4,69 +4,92 @@ using System.Collections.Generic;
 public class UnitSelection : MonoBehaviour
 {
     public LayerMask unitLayer;
+    public FormationBase defaultFormation;
 
     public List<UnitController> unitList = new List<UnitController>();
     public List<UnitController> selectedUnits = new List<UnitController>();
 
-    private void Update()
+    private static UnitSelection instance;
+    public static UnitSelection Instance { get { return instance; } }
+    void Awake()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (instance != null && instance != this)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, unitLayer))
-            {
-                UnitController selectedUnit = hit.collider.GetComponent<UnitController>();
-
-                if (selectedUnit != null && !selectedUnits.Contains(selectedUnit))
-                {
-                    AddToSelection(selectedUnit);
-                    
-                }
-            }
-            else
-            {
-                ClearSelection();
-            }
+            Destroy(this.gameObject);
+        }
+        else
+        {
+            instance = this;
         }
     }
 
-    public void ClearSelection()
+    public void ClickSelect(UnitController unitToAdd)
     {
-        foreach (UnitController unit in selectedUnits)
+        DeselectAll();
+        selectedUnits.Add(unitToAdd);
+        unitToAdd.transform.GetChild(0).gameObject.SetActive(true);
+        unitToAdd.GetComponent<UnitMovement>().enabled = true;
+    }
+
+    public void ShiftClickSelect(UnitController unitToAdd) 
+    {
+        if(!selectedUnits.Contains(unitToAdd))
         {
-            unit.SetSelected(false);
+            selectedUnits.Add(unitToAdd);
+            unitToAdd.transform.GetChild(0).gameObject.SetActive(true);
+            unitToAdd.GetComponent<UnitMovement>().enabled = true;
+        }
+        else
+        {
+            unitToAdd.transform.GetChild(0).gameObject.SetActive(false);
+            unitToAdd.GetComponent<UnitMovement>().enabled = false;
+            selectedUnits.Remove(unitToAdd);
+        }
+    }
+    public void DragSelect(UnitController unitToAdd)
+    {
+        if (!selectedUnits.Contains(unitToAdd))
+        {
+            selectedUnits.Add(unitToAdd);
+            unitToAdd.transform.GetChild(0).gameObject.SetActive(true);
+            unitToAdd.GetComponent<UnitMovement>().enabled = true;
+        }
+    }
+
+    public void DeselectAll()
+    {
+        foreach (var unit in selectedUnits)
+        {
+            unit.GetComponent<UnitMovement>().enabled = false;
+            unit.transform.GetChild(0).gameObject.SetActive(false);
         }
         selectedUnits.Clear();
+
+    }
+    public void Deselect(UnitController unitToDeselect)
+    {
+
     }
 
-    public void AddToSelection(UnitController unit)
+    public void SetUnitsInFormation()
     {
-        unit.SetSelected(true);
-        selectedUnits.Add(unit);
-    }
-
-    public void RemoveFromSelection(UnitController unit)
-    {
-        unit.SetSelected(false);
-        selectedUnits.Remove(unit);
-    }
-
-    public List<UnitController> GetSelectedUnits()
-    {
-        return selectedUnits;
-    }
-
-    private void OnDrawGizmos()
-    {
-        foreach (UnitController unit in selectedUnits)
+        // Certifique-se de que há unidades selecionadas e uma formação padrão definida.
+        if (selectedUnits.Count == 0 || defaultFormation == null)
         {
-            if (unit != null)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawWireSphere(unit.transform.position, 1.5f);
-            }
+            return;
+        }
+        Debug.Log("SetUnitsInFormation() is called!");
+        // Obtenha os pontos de posição da formação padrão.
+        List<Vector3> formationPoints = new List<Vector3>(defaultFormation.EvaluatePoints());
+
+        // Verifique se o número de unidades selecionadas é menor ou igual ao número de pontos na formação.
+        int numUnits = Mathf.Min(selectedUnits.Count, formationPoints.Count);
+
+        // Posicione as unidades selecionadas na formação.
+        for (int i = 0; i < numUnits; i++)
+        {
+            selectedUnits[i].GetComponent<UnitMovement>().MoveToDestination(formationPoints[i]);
         }
     }
+
 }

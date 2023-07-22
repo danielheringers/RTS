@@ -44,8 +44,8 @@ public class UnitController : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         enemyLayer = LayerMask.GetMask("Enemy");
-        attackCooldown = 1f / characterData.attackSpeed;
-        animatorCooldown = 1f * characterData.attackSpeed;
+        
+        
 
         // Busca por todos os inimigos presentes na cena e adiciona o ouvinte ao evento OnDeath.
         EnemyController[] enemies = FindObjectsOfType<EnemyController>();
@@ -54,16 +54,20 @@ public class UnitController : MonoBehaviour
             enemy.OnDeath.AddListener(ReceiveExperience);
         }
         stoppingDistance = currentAttackRange;
+
+        //Novo Metodos de Seleção
+        UnitSelection.Instance.unitList.Add(this);
     }
 
-    private void ReceiveExperience(int experienceReceived)
+    private void OnDestroy()
     {
-        characterData.GainExperience(experienceReceived);
+        UnitSelection.Instance.unitList.Remove(this);
     }
-
 
     private void Update()
     {
+        attackCooldown = characterData.attackSpeed / ((500 + characterData.attackSpeed) * 0.01f);
+        animatorCooldown = characterData.attackSpeed / ((500 + characterData.attackSpeed) * 0.01f);
         if (!isRanged && isAutoBattle)
         {
             CheckForEnemyInRange();
@@ -85,6 +89,11 @@ public class UnitController : MonoBehaviour
         {
             // Se estiver no modo de combate autom�tico, procurar inimigos e atacar automaticamente.
             PerformAutoBattle();
+            isAttacking = true;
+        }
+        else if(isAutoBattle == false)
+        {
+            isAttacking = false;
         }
         currentHealth = characterData.maxHealth;
         currentDamage = characterData.attackDamage;
@@ -92,25 +101,11 @@ public class UnitController : MonoBehaviour
         currentAttackSpeed = characterData.attackSpeed;
         currentAttackRange = characterData.attackRange;
         currentMoveSpeed = characterData.moveSpeed;
+    }
 
-        // Verifica se a animação de ataque está sendo reproduzida
-        if (animator.GetCurrentAnimatorStateInfo(0).IsName("archer_04_attack_A"))
-        {
-            // Calcula o tempo atual da animação em frames
-            float currentFrame = animator.GetCurrentAnimatorStateInfo(0).normalizedTime * animator.GetCurrentAnimatorClipInfo(0)[0].clip.frameRate;
-
-            // Verifica se o 10º frame da animação foi alcançado e se o projetil ainda não foi lançado
-            if (currentFrame >= frameToLaunchProjectile && !hasLaunchedProjectile)
-            {
-                hasLaunchedProjectile = true;
-
-            }
-        }
-        else
-        {
-            // Reseta o flag quando a animação não estiver sendo reproduzida
-            hasLaunchedProjectile = false;
-        }
+    private void ReceiveExperience(int experienceReceived)
+    {
+        characterData.GainExperience(experienceReceived);
     }
     public void CheckForEnemyInRange()
     {
@@ -203,6 +198,7 @@ public class UnitController : MonoBehaviour
             {
                 // Se o personagem for ranged, atira um proj�til
                 ShootProjectile(enemy);
+                transform.LookAt(enemy.transform.position);
             }
             else
             {
