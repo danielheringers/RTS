@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,6 +9,8 @@ public class PlayerController : MonoBehaviour
     public LayerMask enemyLayer;
     public LayerMask groundLayer;
     public Camera mainCamera;
+    EnemyController enemyUnit;
+
 
     private void Update()
     {
@@ -42,7 +45,22 @@ public class PlayerController : MonoBehaviour
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, enemyLayer))
+            {
+                foreach (UnitController unit in UnitSelection.Instance.selectedUnits)
+                {
+                    UnitMovement unitMovement = unit.GetComponent<UnitMovement>();
+                    enemyUnit = hit.collider.GetComponent<EnemyController>();
+                    if (unitMovement != null)
+                    {
+                        Debug.Log("Enemy");
+                        unit.targetController = enemyUnit;
+                        unit.target = hit.collider.GameObject();
+                        unitMovement.MoveToEnemy(enemyUnit);
+                    }
+                }
+            }
+            else if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
             {
                 Vector3 destination = hit.point;
                 foreach (UnitController unit in UnitSelection.Instance.selectedUnits)
@@ -51,28 +69,16 @@ public class PlayerController : MonoBehaviour
 
                     if (unitMovement != null)
                     {
+                        
                         unit.isAutoBattle = false;
                         unitMovement.MoveToDestination(destination);
+                        Debug.Log("Terrain");
                     }
                 }
-                
+
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            // Ativar ou desativar o modo de combate automático para todas as unidades selecionadas.
-            ToggleAutoBattleForSelectedUnits();
-        }
-
     }
-    private void ToggleAutoBattleForSelectedUnits()
-    {
-        // Percorrer todas as unidades selecionadas e ativar/desativar o modo de combate automático.
-        foreach (UnitController unit in UnitSelection.Instance.selectedUnits)
-        {
-            unit.ActivateAutoBattle(!unit.isAutoBattle);
 
-        }
-    }
 }

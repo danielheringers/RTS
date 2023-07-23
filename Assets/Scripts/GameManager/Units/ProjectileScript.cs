@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 public class ProjectileScript : MonoBehaviour
@@ -26,7 +26,7 @@ public class ProjectileScript : MonoBehaviour
     private void Start()
     {
         initialPosition = transform.position;
-        unitController = source.GetComponent<UnitController>();
+        unitController = source.gameObject.GetComponent<UnitController>();
     }
 
     private void Update()
@@ -35,7 +35,7 @@ public class ProjectileScript : MonoBehaviour
         {
             StartCoroutine(MoveToTarget());
         }
-        else if(target == null)
+        else if (target == null)
         {
             Destroy(gameObject);
         }
@@ -85,14 +85,14 @@ public class ProjectileScript : MonoBehaviour
     {
         if (target != null)
         {
-            // Verifica se o alvo possui o componente EnemyController (ou o componente do seu inimigo, se aplicável)
+            // Verifica se o alvo possui o componente EnemyController (ou o componente do seu inimigo, se aplicï¿½vel)
             EnemyController enemy = target.GetComponent<EnemyController>();
 
             if (enemy != null && unitController != null)
             {
-                // Aplica o dano ao alvo usando o método TakeDamage do inimigo
+                // Aplica o dano ao alvo usando o mï¿½todo TakeDamage do inimigo
                 enemy.TakeDamage(unitController.currentDamage);
-                
+
             }
         }
     }

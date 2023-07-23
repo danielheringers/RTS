@@ -1,24 +1,19 @@
-﻿using System;
-using UnityEditor;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class UnitController : MonoBehaviour
 {
-    private UnitMovement unitMovement;
     public int currentHealth;
     public int currentDamage;
     public int currentArmor;
     public float currentAttackSpeed;
     public float currentAttackRange;
     public float currentMoveSpeed;
-    public bool isRanged;
-    public bool isSelected;
-    public bool isAutoBattle = false;
-    public CharacterData characterData;
     public float attackCooldown;
     public float animatorCooldown;
     public float lastAttackTime = 0.0f;
+    public CharacterData characterData;
     public NavMeshAgent navMeshAgent;
     public Camera mainCamera;
     public UnitSelection unitSelection;
@@ -27,12 +22,23 @@ public class UnitController : MonoBehaviour
     public Animator animator;
     public bool isAttacking = false;
     public float stoppingDistance;
+    public bool isRanged;
+    public bool isSelected;
+    public bool isAutoBattle = false;
+    public GameObject target;
+    public EnemyController targetController;
+    [Header("Melee Attack")]
+    private bool performMeleeAttack = true;
+    private float nextAttackTime;
+
+    [Header("Ranged Attack")]
+    private bool performRangedAttack = true;
     public GameObject projectilePrefab;
     public Transform projectileSpawnPoint;
-    private bool hasLaunchedProjectile = false;
-    public int frameToLaunchProjectile = 10;
-    private EnemyController target;
-    private int experienceToReceive;
+    public GameObject spawnedProjectile;
+    ProjectileScript projectileScript;
+
+
     private void Start()
     {
         currentHealth = characterData.maxHealth;
@@ -44,9 +50,6 @@ public class UnitController : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         enemyLayer = LayerMask.GetMask("Enemy");
-        
-        
-
         // Busca por todos os inimigos presentes na cena e adiciona o ouvinte ao evento OnDeath.
         EnemyController[] enemies = FindObjectsOfType<EnemyController>();
         foreach (EnemyController enemy in enemies)
@@ -66,194 +69,109 @@ public class UnitController : MonoBehaviour
 
     private void Update()
     {
-        attackCooldown = characterData.attackSpeed / ((500 + characterData.attackSpeed) * 0.01f);
-        animatorCooldown = characterData.attackSpeed / ((500 + characterData.attackSpeed) * 0.01f);
-        if (!isRanged && isAutoBattle)
-        {
-            CheckForEnemyInRange();
-        }
-        else if(isRanged && isAutoBattle)
-        {
-            CheckForEnemyInRangeisRange();
-        }
-        if (isAttacking == true)
-        {
-            animator.SetBool("isAttacking", true);
-            animator.SetFloat("animatorSpeed", animatorCooldown);
-        }
-        else
-        {
-            animator.SetBool("isAttacking", false);
-        }
-        if (isAutoBattle)
-        {
-            // Se estiver no modo de combate autom�tico, procurar inimigos e atacar automaticamente.
-            PerformAutoBattle();
-            isAttacking = true;
-        }
-        else if(isAutoBattle == false)
-        {
-            isAttacking = false;
-        }
+        //Stats
         currentHealth = characterData.maxHealth;
         currentDamage = characterData.attackDamage;
         currentArmor = characterData.armor;
         currentAttackSpeed = characterData.attackSpeed;
         currentAttackRange = characterData.attackRange;
         currentMoveSpeed = characterData.moveSpeed;
+        attackCooldown = characterData.attackSpeed / ((500 + characterData.attackSpeed) * 0.01f);
+
+        if (!isRanged)
+        {
+            if (target != null && performMeleeAttack && Time.time > nextAttackTime)
+            {
+                if (Vector3.Distance(transform.position, target.transform.position) <= 3)
+                {
+                    StartCoroutine(MelleAttackInterval());
+                }
+            }
+        }
+        else if(isRanged)
+        {
+            if (target != null && performRangedAttack && Time.time > nextAttackTime)
+            {
+                if (Vector3.Distance(transform.position, target.transform.position) <= currentAttackRange)
+                {
+                    StartCoroutine(RangedAttackInterval());
+                    Debug.Log("Ataque Ranged Funcionando");
+                }
+            }
+        }
+
+
+        
+
     }
 
     private void ReceiveExperience(int experienceReceived)
     {
         characterData.GainExperience(experienceReceived);
     }
-    public void CheckForEnemyInRange()
+
+
+
+    private IEnumerator MelleAttackInterval()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, currentAttackRange, enemyLayer);
+        performMeleeAttack = false;
+        animator.SetBool("isAttacking", true);
 
-        bool hasValidTarget = false; // Vari�vel para indicar se a unidade encontrou um alvo v�lido.
+        yield return new WaitForSeconds(attackCooldown);
 
-        foreach (Collider col in hitColliders)
+        if(target == null)
         {
-            EnemyController enemyUnit = col.GetComponent<EnemyController>();
-
-            if (enemyUnit && enemyUnit.IsAlive())
-            {
-                // Calcula a dist�ncia entre a unidade e o inimigo atual.
-                float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
-
-                // Verifica se o inimigo atual est� dentro da dist�ncia de ataque.
-                if (distanceToEnemy <= currentAttackRange)
-                {
-                    // Define o estado de ataque como true.
-                    isAttacking = true;
-
-                    // Ataca o inimigo somente quando a unidade estiver pr�xima o suficiente.
-                    if (distanceToEnemy <= stoppingDistance)
-                    {
-                        AttackEnemy(enemyUnit);
-                    }
-
-                    hasValidTarget = true; // Indica que a unidade encontrou um alvo v�lido para atacar.
-                    break; // Sai do loop, pois j� encontramos um alvo v�lido.
-                }
-            }
-        }
-
-        // Se a unidade n�o encontrou nenhum alvo v�lido dentro da dist�ncia de ataque, desativa o estado de ataque.
-        if (!hasValidTarget)
-        {
-            isAttacking = false;
+            animator.SetBool("isAttacking", false);
+            performMeleeAttack = true;
         }
     }
 
-    public void CheckForEnemyInRangeisRange()
+    private IEnumerator RangedAttackInterval()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, currentAttackRange, enemyLayer);
+        performRangedAttack = false;
+        animator.SetBool("isAttacking", true);
 
-        bool hasValidTarget = false; // Vari�vel para indicar se a unidade encontrou um alvo v�lido.
+        yield return new WaitForSeconds(attackCooldown);
 
-        foreach (Collider col in hitColliders)
+        if (target == null)
         {
-            EnemyController enemyUnit = col.GetComponent<EnemyController>();
-
-            if (enemyUnit && enemyUnit.IsAlive())
-            {
-                // Calcula a dist�ncia entre a unidade e o inimigo atual.
-                float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
-
-                // Verifica se o inimigo atual est� dentro da dist�ncia de ataque.
-                if (distanceToEnemy <= currentAttackRange)
-                {
-                    // Define o estado de ataque como true.
-                    isAttacking = true;
-
-                    // Ataca o inimigo somente quando a unidade estiver pr�xima o suficiente.
-                    if (distanceToEnemy <= currentAttackRange)
-                    {
-                        AttackEnemy(enemyUnit);
-                    }
-
-                    hasValidTarget = true; // Indica que a unidade encontrou um alvo v�lido para atacar.
-                    break; // Sai do loop, pois j� encontramos um alvo v�lido.
-                }
-            }
-        }
-
-        // Se a unidade n�o encontrou nenhum alvo v�lido dentro da dist�ncia de ataque, desativa o estado de ataque.
-        if (!hasValidTarget)
-        {
-            isAttacking = false;
+            animator.SetBool("isAttacking", false);
+            performRangedAttack = true;
         }
     }
+    private void MeleeAttackEnemy()
+    {
+        targetController.TakeDamage(currentDamage);
+        
+        nextAttackTime = Time.time + attackCooldown;
+        performMeleeAttack = true;
+        animator.SetBool("isAttacking", false);
+    }
 
-    public void AttackEnemy(EnemyController enemy)
+    private void RangedAttackEnemy()
     {
 
-        // Verifica se o tempo desde o �ltimo ataque � maior do que o tempo de intervalo entre ataques.
-        if (Time.time - lastAttackTime >= attackCooldown)
+        spawnedProjectile = Instantiate(projectilePrefab, projectileSpawnPoint.transform.position, projectileSpawnPoint.transform.rotation);
+        ProjectileScript projectileTarget = spawnedProjectile.GetComponent<ProjectileScript>();
+
+        if(projectileTarget != null)
         {
-            // Realiza o ataque e aplica dano ao inimigo
-            if (isRanged)
+            projectileTarget.SetSource(transform);
+            if(target != null)
             {
-                // Se o personagem for ranged, atira um proj�til
-                ShootProjectile(enemy);
-                transform.LookAt(enemy.transform.position);
+                projectileTarget.SetTarget(target.transform);
             }
             else
             {
-                enemy.TakeDamage(characterData.attackDamage);
+                performRangedAttack = true;
+                animator.SetBool("isAttacking", false);
+                return;
             }
-
-            // Verifica se o inimigo foi derrotado
-            if (!enemy.IsAlive())
-            {
-                // Define o estado de ataque como false e limpa o alvo atual.
-                isAttacking = false;
-                target = null;
-
-                // Remova a refer�ncia do alvo no proj�til.
-                if (projectilePrefab != null)
-                {
-                    ProjectileScript projectileScript = projectilePrefab.GetComponent<ProjectileScript>();
-                    if (projectileScript != null)
-                    {
-                        projectileScript.SetTarget(null);
-                    }
-                }
-            }
-
-            // Atualiza o tempo do �ltimo ataque.
-            lastAttackTime = Time.time;
         }
+        nextAttackTime = Time.time + attackCooldown;
+        performRangedAttack = true;
+        animator.SetBool("isAttacking", false);
     }
-    private void ShootProjectile(EnemyController target)
-    {
-        // Verifica se o prefab do proj�til est� configurado
-        if (projectilePrefab == null)
-        {
-            Debug.LogError("Projectile prefab not set on " + gameObject.name);
-            return;
-        }
-
-        // Instancia o proj�til no ponto de inst�ncia do proj�til
-        GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
-
-        // Obt�m um componente do proj�til (voc� precisa definir seu script para movimentar o proj�til e causar dano)
-        ProjectileScript projectileScript = projectile.GetComponent<ProjectileScript>();
-
-        // Define o alvo para o proj�til (isso permite que o proj�til saiba quem ele deve perseguir)
-        projectileScript.SetTarget(target.transform);
-
-        // Define a fonte do proj�til (a unidade que est� atirando)
-        projectileScript.SetSource(transform);
-
-        if (projectileScript.target == null)
-        {
-            Destroy(projectile);
-        }
-    }
-
 
     public void TakeDamage(int damageAmount)
     {
@@ -281,64 +199,4 @@ public class UnitController : MonoBehaviour
         isSelected = selected;
     }
 
-    public void ActivateAutoBattle(bool activate)
-    {
-        isAutoBattle = activate;
-
-        // Se o Auto Battle foi ativado, interrompa qualquer movimento atual para que a unidade possa atacar imediatamente.
-        if (isAutoBattle)
-        {
-            navMeshAgent.ResetPath();
-        }
-    }
-    private void PerformAutoBattle()
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 10f, enemyLayer);
-
-        EnemyController nearestEnemy = null;
-        float nearestDistance = Mathf.Infinity;
-
-        foreach (Collider col in hitColliders)
-        {
-            EnemyController enemyUnit = col.GetComponent<EnemyController>();
-
-            if (enemyUnit != null && enemyUnit.IsAlive())
-            {
-                // Verifica se a unidade j� est� atacando um inimigo.
-                if (isAttacking)
-                {
-                    // Se a unidade j� est� atacando, continua a atacar o inimigo atual.
-                    if (target == enemyUnit)
-                    {
-                        AttackEnemy(enemyUnit);
-                    }
-                }
-                else
-                {
-                    // Calcula a dist�ncia entre a unidade e o inimigo atual.
-                    float distanceToEnemy = Vector3.Distance(transform.position, enemyUnit.transform.position);
-                    // Verifica se o inimigo atual est� mais pr�ximo do que o anteriormente selecionado.
-                    if (distanceToEnemy < nearestDistance)
-                    {
-                        nearestDistance = distanceToEnemy;
-                        nearestEnemy = enemyUnit;
-                    }
-                }
-            }
-        }
-
-        // Se foi encontrado um inimigo pr�ximo, define o destino para a movimenta��o da unidade.
-        if (nearestEnemy != null)
-        {
-            // Verifica se a unidade j� est� atacando um inimigo.
-            if (!isAttacking || target == null || !target.IsAlive())
-            {
-                target = nearestEnemy;
-                Vector3 directionToEnemy = (target.transform.position - transform.position).normalized;
-                Vector3 destination = target.transform.position - directionToEnemy * stoppingDistance;
-                navMeshAgent.SetDestination(destination);
-
-            }
-        }
-    }
 }

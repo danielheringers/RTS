@@ -40,8 +40,6 @@ public class UnitData : ScriptableObject
         maxHealth += 84;
         attackDamage += 3;
         armor += 3;
-        attackSpeed += attackSpeed * 0.025f;
-
         currentExperience -= experienceToNextLevel;
 
         experienceToNextLevel += 100;
