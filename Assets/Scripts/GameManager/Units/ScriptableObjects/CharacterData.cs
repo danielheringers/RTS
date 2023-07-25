@@ -4,9 +4,9 @@ using UnityEngine;
 public class CharacterData : ScriptableObject
 {
     public string characterName;
-    public int maxHealth;
-    public int attackDamage;
-    public int armor;
+    public float maxHealth;
+    public float attackDamage;
+    public float armor;
     public float attackSpeed;
     public float attackRange;
     public float moveSpeed;

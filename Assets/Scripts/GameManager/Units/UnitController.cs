@@ -4,9 +4,9 @@ using UnityEngine.AI;
 
 public class UnitController : MonoBehaviour
 {
-    public int currentHealth;
-    public int currentDamage;
-    public int currentArmor;
+    public float currentHealth;
+    public float currentDamage;
+    public float currentArmor;
     public float currentAttackSpeed;
     public float currentAttackRange;
     public float currentMoveSpeed;
@@ -76,13 +76,13 @@ public class UnitController : MonoBehaviour
         currentAttackSpeed = characterData.attackSpeed;
         currentAttackRange = characterData.attackRange;
         currentMoveSpeed = characterData.moveSpeed;
-        attackCooldown = characterData.attackSpeed / ((500 + characterData.attackSpeed) * 0.01f);
+        attackCooldown = 1f / characterData.attackSpeed;
 
         if (!isRanged)
         {
             if (target != null && performMeleeAttack && Time.time > nextAttackTime)
             {
-                if (Vector3.Distance(transform.position, target.transform.position) <= 3)
+                if (Vector3.Distance(transform.position, target.transform.position) <= currentAttackRange)
                 {
                     StartCoroutine(MelleAttackInterval());
                 }
@@ -95,7 +95,6 @@ public class UnitController : MonoBehaviour
                 if (Vector3.Distance(transform.position, target.transform.position) <= currentAttackRange)
                 {
                     StartCoroutine(RangedAttackInterval());
-                    Debug.Log("Ataque Ranged Funcionando");
                 }
             }
         }
@@ -173,9 +172,9 @@ public class UnitController : MonoBehaviour
         animator.SetBool("isAttacking", false);
     }
 
-    public void TakeDamage(int damageAmount)
+    public void TakeDamage(float damageAmount)
     {
-        currentHealth -= damageAmount;
+        currentHealth -= damageAmount * (currentArmor / (currentArmor + 100));
         if (currentHealth <= 0)
         {
             Die();

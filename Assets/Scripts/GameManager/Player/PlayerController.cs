@@ -71,8 +71,9 @@ public class PlayerController : MonoBehaviour
                     {
                         
                         unit.isAutoBattle = false;
+
                         unitMovement.MoveToDestination(destination);
-                        Debug.Log("Terrain");
+                        
                     }
                 }
 

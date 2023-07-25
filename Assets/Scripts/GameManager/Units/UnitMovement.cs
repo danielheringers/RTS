@@ -54,9 +54,8 @@ public class UnitMovement : MonoBehaviour
     {
         navMeshAgent.SetDestination(destination);
         navMeshAgent.stoppingDistance = 0;
-        Rotation(destination);
 
-        if(targetEnemy != null)
+        if (targetEnemy != null)
         {
             highlightManager.DeselectHighLight();
             targetEnemy = null;
@@ -73,8 +72,11 @@ public class UnitMovement : MonoBehaviour
     }
     public void Rotation(Vector3 lookAtPosition)
     {
-        Quaternion rotationToLookAt = Quaternion.LookRotation(lookAtPosition - transform.position);
-        float rotationY = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationToLookAt.eulerAngles.y, ref rotateVelocity, rotateSpeedMovement * (Time.deltaTime * 5));
-        transform.eulerAngles = new Vector3(0, rotationY, 0);
+        Vector3 lookAtDirection = lookAtPosition - transform.position;
+        lookAtDirection.y = 0f; // Para evitar inclinação na rotação
+        if (lookAtDirection != Vector3.zero)
+        {
+            transform.forward = lookAtDirection.normalized;
+        }
     }
 }

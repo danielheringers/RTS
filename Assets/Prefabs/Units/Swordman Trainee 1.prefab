@@ -6532,13 +6532,10 @@ MonoBehaviour:
   currentAttackSpeed: 0
   currentAttackRange: 0
   currentMoveSpeed: 0
-  isRanged: 0
-  isSelected: 0
-  isAutoBattle: 0
-  characterData: {fileID: 0}
   attackCooldown: 0
   animatorCooldown: 0
   lastAttackTime: 0
+  characterData: {fileID: 11400000, guid: bbb11d68ef01c704f815e90d762b57c9, type: 2}
   navMeshAgent: {fileID: 7442340432562413293}
   mainCamera: {fileID: 0}
   unitSelection: {fileID: 0}
@@ -6551,9 +6548,14 @@ MonoBehaviour:
   animator: {fileID: 0}
   isAttacking: 0
   stoppingDistance: 1
+  isRanged: 0
+  isSelected: 0
+  isAutoBattle: 0
+  target: {fileID: 0}
+  targetController: {fileID: 0}
   projectilePrefab: {fileID: 0}
   projectileSpawnPoint: {fileID: 0}
-  frameToLaunchProjectile: 10
+  spawnedProjectile: {fileID: 0}
 --- !u!114 &207548768273519011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6568,6 +6570,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   navMeshAgent: {fileID: 7442340432562413293}
   animator: {fileID: 0}
+  rotateSpeedMovement: 0.05
   groundLayer:
     serializedVersion: 2
     m_Bits: 0

@@ -9,8 +9,9 @@ public class HighlightManager : MonoBehaviour
     private Transform selectedObj;
     public LayerMask selectableLayer;
 
-    private Outline hightLightOutline;
+    private Outline highLightOutline;
     private RaycastHit hit;
+
     void Update()
     {
         HoverHighLight();
@@ -19,7 +20,7 @@ public class HighlightManager : MonoBehaviour
     {
         if(highlightedObj != null)
         {
-            hightLightOutline.enabled = false;
+            highLightOutline.enabled = false;
             highlightedObj  = null;
         }
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -30,8 +31,8 @@ public class HighlightManager : MonoBehaviour
 
             if(highlightedObj.CompareTag("Enemy") && highlightedObj != selectedObj)
             {
-                hightLightOutline = highlightedObj.GetComponent<Outline>();
-                hightLightOutline.enabled = true;
+                highLightOutline = highlightedObj.GetComponent<Outline>();
+                highLightOutline.enabled = true;
             }
             else
             {
@@ -52,7 +53,7 @@ public class HighlightManager : MonoBehaviour
             selectedObj = hit.transform;
             selectedObj.GetComponent<Outline>().enabled = true;
 
-            hightLightOutline.enabled = true;
+            highLightOutline.enabled = true;
             highlightedObj = null;
         }
     }

@@ -5,9 +5,9 @@ public class UnitData : ScriptableObject
 {
     public int unitID; 
     public string unitName;
-    public int maxHealth;
-    public int attackDamage;
-    public int armor;
+    public float maxHealth;
+    public float attackDamage;
+    public float armor;
     public float attackSpeed;
     public float attackRange;
     public float moveSpeed;
