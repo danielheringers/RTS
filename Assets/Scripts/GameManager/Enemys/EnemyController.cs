@@ -74,6 +74,18 @@ public class EnemyController : MonoBehaviour
                 }
             }
         }
+        if (target != null)
+        {
+            Rotation(targetUnit.transform.position);
+        }
+        if (target != null)
+        {
+            if (Vector3.Distance(transform.position, targetUnit.position) > currentAttackRange)
+            {
+                navMeshAgent.stoppingDistance = currentAttackRange;
+                navMeshAgent.SetDestination(targetUnit.position);
+            }
+        }
     }
 
     private IEnumerator MelleAttackInterval()
@@ -214,7 +226,7 @@ public class EnemyController : MonoBehaviour
         if (directionToLook != Vector3.zero)
         {
             Quaternion newRotation = Quaternion.LookRotation(directionToLook);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, newRotation, 0.05f * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, newRotation, 100f * Time.deltaTime);
         }
     }
 

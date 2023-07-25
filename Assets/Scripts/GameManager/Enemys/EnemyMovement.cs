@@ -10,7 +10,6 @@ public class EnemyMovement : MonoBehaviour
     float motionSmoothTime = 0.1f;
     private UnitController targetEnemy;
     private float stoppingDistance;
-    private Transform patrolPoint; // Ponto de patrulha (opcional).
     private HighlightManager highlightManager;
 
     private void Start()
@@ -19,6 +18,7 @@ public class EnemyMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         stoppingDistance = GetComponent<EnemyController>().currentAttackRange;
         highlightManager = GetComponent<HighlightManager>();
+        targetEnemy = GetComponent<EnemyController>().target;
     }
 
     private void Update()
@@ -42,6 +42,7 @@ public class EnemyMovement : MonoBehaviour
                 navMeshAgent.SetDestination(targetEnemy.transform.position);
             }
         }
+
     }
 
     public void Animation()
@@ -69,13 +70,6 @@ public class EnemyMovement : MonoBehaviour
         targetEnemy = target.GetComponent<UnitController>();
         navMeshAgent.stoppingDistance = stoppingDistance;
         highlightManager.SelectedHighlight();
-    }
-
-    // Define o ponto de patrulha para a movimentação da unidade.
-    public void SetPatrolPoint(Transform point)
-    {
-        patrolPoint = point;
-        targetEnemy = null; // Define o alvo como null para parar de perseguir.
     }
 
     public void Rotation(Vector3 lookAtPosition)
