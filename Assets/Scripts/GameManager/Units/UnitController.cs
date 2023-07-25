@@ -69,13 +69,6 @@ public class UnitController : MonoBehaviour
 
     private void Update()
     {
-        //Stats
-        currentHealth = characterData.maxHealth;
-        currentDamage = characterData.attackDamage;
-        currentArmor = characterData.armor;
-        currentAttackSpeed = characterData.attackSpeed;
-        currentAttackRange = characterData.attackRange;
-        currentMoveSpeed = characterData.moveSpeed;
         attackCooldown = 1f / characterData.attackSpeed;
 
         if (!isRanged)
@@ -85,6 +78,7 @@ public class UnitController : MonoBehaviour
                 if (Vector3.Distance(transform.position, target.transform.position) <= currentAttackRange)
                 {
                     StartCoroutine(MelleAttackInterval());
+                    this.transform.LookAt(target.transform.position);
                 }
             }
         }
@@ -95,6 +89,7 @@ public class UnitController : MonoBehaviour
                 if (Vector3.Distance(transform.position, target.transform.position) <= currentAttackRange)
                 {
                     StartCoroutine(RangedAttackInterval());
+                    this.transform.LookAt(target.transform.position);
                 }
             }
         }

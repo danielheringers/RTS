@@ -24,6 +24,7 @@ public class EnemyController : MonoBehaviour
     public NavMeshAgent navMeshAgent;
     public LayerMask unitLayer;
     public bool isRanged;
+    public bool inBattle = false;
     [Header("Melee Attack")]
     private bool performMeleeAttack = true;
 
@@ -108,12 +109,15 @@ public class EnemyController : MonoBehaviour
         if (!isAlive)
             return;
         currentHealth -= damageAmount * (enemyData.armor / (enemyData.armor + 100));
+        
         if (currentHealth <= 0)
         {
+            inBattle = false;
             Die();
         }
         else
         {
+            inBattle = true;
             FindNearestUnit();
         }
     }
@@ -147,6 +151,7 @@ public class EnemyController : MonoBehaviour
                     closestDistance = distance;
                     nearestUnit = unit.transform;
                     targetUnit = nearestUnit;
+                    Rotation(targetUnit.transform.position);
                     target = unit.GetComponent<UnitController>();
                     
                 }
@@ -161,7 +166,7 @@ public class EnemyController : MonoBehaviour
             }
             else
             {
-                transform.LookAt(targetUnit.position);
+                Rotation(nearestUnit.position);
             }
             
         }
@@ -171,6 +176,7 @@ public class EnemyController : MonoBehaviour
     private void AttackTargetUnit()
     {
         target.TakeDamage(currentDamage);
+        
         nextAttackTime = Time.time + attackCooldown;
         performMeleeAttack = true;
         animator.SetBool("isAttacking", false);
@@ -200,4 +206,16 @@ public class EnemyController : MonoBehaviour
         performRangedAttack = true;
         animator.SetBool("isAttacking", false);
     }
+    private void Rotation(Vector3 lookAtPosition)
+    {
+        Vector3 directionToLook = lookAtPosition - transform.position;
+        
+
+        if (directionToLook != Vector3.zero)
+        {
+            Quaternion newRotation = Quaternion.LookRotation(directionToLook);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, newRotation, 0.05f * Time.deltaTime);
+        }
+    }
+
 }

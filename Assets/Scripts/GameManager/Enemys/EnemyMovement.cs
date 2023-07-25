@@ -56,7 +56,6 @@ public class EnemyMovement : MonoBehaviour
     {
         navMeshAgent.SetDestination(destination);
         navMeshAgent.stoppingDistance = 0;
-
         if (targetEnemy != null)
         {
             highlightManager.DeselectHighLight();
@@ -69,7 +68,6 @@ public class EnemyMovement : MonoBehaviour
     {
         targetEnemy = target.GetComponent<UnitController>();
         navMeshAgent.stoppingDistance = stoppingDistance;
-        Rotation(target.position);
         highlightManager.SelectedHighlight();
     }
 

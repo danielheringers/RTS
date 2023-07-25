@@ -5,7 +5,7 @@ public class RandomWander : MonoBehaviour
 {
     public float wanderRadius = 10f;
     public float wanderInterval = 5f;
-
+    private EnemyController enemyController;
     private Transform spawnPoint;
     private NavMeshAgent navMeshAgent;
     private float timer;
@@ -15,6 +15,7 @@ public class RandomWander : MonoBehaviour
         spawnPoint = transform.parent; // O spawn point deve ser o pai do inimigo.
         navMeshAgent = GetComponent<NavMeshAgent>();
         timer = wanderInterval;
+        enemyController = GetComponent<EnemyController>();
     }
 
     private void Update()
@@ -24,7 +25,7 @@ public class RandomWander : MonoBehaviour
         {
             timer -= Time.deltaTime;
 
-            if (timer <= 0f)
+            if (timer <= 0f && enemyController.inBattle == false)
             {
                 Vector3 randomDirection = Random.insideUnitSphere * wanderRadius;
                 randomDirection += spawnPoint.position;
