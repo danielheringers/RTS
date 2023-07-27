@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class UnitInfoUI : MonoBehaviour
 {
     public Slider healthSlider;
+    public TMP_Text NameText;
     public TMP_Text levelText;
     public TMP_Text experiencePercentageText;
     public TMP_Text experienceText;
@@ -14,6 +15,7 @@ public class UnitInfoUI : MonoBehaviour
     public TMP_Text moveSpeedText;
     public Camera mainCamera;
     public LayerMask unitLayer;
+    public LayerMask anotherLayer;
     private UnitController selectedUnit;
 
     public GameObject unitStatsUI;
@@ -29,16 +31,17 @@ public class UnitInfoUI : MonoBehaviour
             {
                 selectedUnit = hit.collider.GetComponent<UnitController>();
             }
-            else
+            else if (Physics.Raycast(ray, out hit, Mathf.Infinity, anotherLayer))
             {
+                selectedUnit = null; 
                 unitStatsUI.SetActive(false);
             }
         }
-
         if (selectedUnit != null)
         {
             UpdateUI();
         }
+        
     }
 
     private void UpdateUI()
@@ -47,6 +50,7 @@ public class UnitInfoUI : MonoBehaviour
         {
             unitStatsUI.SetActive(true);
             // Atualiza os valores de texto com as informações do characterData
+            NameText.text = selectedUnit.characterData.characterName.ToString();
             levelText.text = selectedUnit.characterData.currentLevel.ToString();
             experienceText.text = selectedUnit.characterData.currentExperience.ToString();
             attackDamageText.text = selectedUnit.characterData.attackDamage.ToString();
@@ -64,10 +68,6 @@ public class UnitInfoUI : MonoBehaviour
 
             // Mostra a porcentagem no texto correspondente
             experiencePercentageText.text = percentage.ToString("F2") + "%";
-        }
-        else
-        {
-            unitStatsUI.SetActive(false);
         }
     }
 }
